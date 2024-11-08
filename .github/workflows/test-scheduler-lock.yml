@@ -40,7 +40,7 @@ jobs:
         resque-lock-timeout-version:
           - "latest"
           - "https://github.com/Ibotta/resque-lock-timeout.git@v0.5.0-ibotta"
-          - "ibotta-resque-lock-timeout:https://github.com/Ibotta/resque-lock-timeout.git@v0.5.1"
+          - "ibotta-resque-lock-timeout;https://github.com/Ibotta/resque-lock-timeout.git@v0.5.1"
         exclude:
           # resque-scheduler (= 4.3.0) depends on redis (~> 3.3)
           - redis-version: "~> 4.8"

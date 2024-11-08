@@ -38,7 +38,7 @@ else
 end
 
 resque_lock_timeout_version = ENV.fetch("RESQUE_LOCK_TIMEOUT_VERSION", "latest")
-capture_resque_lock_timeout = resque_lock_timeout_version.split(":", 2)
+capture_resque_lock_timeout = resque_lock_timeout_version.split(";", 2)
 resque_lock_timeout_gem = if capture_resque_lock_timeout[1]
   resque_lock_timeout_version = capture_resque_lock_timeout[1]
   capture_resque_lock_timeout[0]
