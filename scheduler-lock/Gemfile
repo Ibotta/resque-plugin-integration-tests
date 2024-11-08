@@ -1,0 +1,60 @@
+source "https://rubygems.org"
+
+case resque_version = ENV.fetch("RESQUE", "latest")
+when "master"
+  gem "resque", git: "https://github.com/resque/resque"
+when /^git:/, /^https:/
+  gem "resque", git: resque_version
+when "latest"
+  gem "resque"
+else
+  versions = resque_version.split(",")
+  gem "resque", *versions
+end
+
+case redis_version = ENV.fetch("REDIS_VERSION", "latest")
+when "master"
+  gem "redis", git: "https://github.com/redis/redis-rb"
+when /^git:/, /^https:/
+  gem "redis", git: redis_version
+when "latest"
+  gem "redis"
+else
+  versions = redis_version.split(",")
+  gem "redis", *versions
+end
+
+case resque_scheduler_version = ENV.fetch("RESQUE_SCHEDULER_VERSION", "latest")
+when "master"
+  gem "resque-scheduler", git: "https://github.com/resque/resque-scheduler"
+when /^git:/, /^https:/
+  repo, ref = resque_scheduler_version.split("@", 2)
+  gem "resque-scheduler", git: repo, ref: ref
+when "latest"
+  gem "resque-scheduler"
+else
+  versions = resque_scheduler_version.split(",")
+  gem "resque-scheduler", *versions
+end
+
+case resque_lock_timeout_version = ENV.fetch("RESQUE_LOCK_TIMEOUT_VERSION", "latest")
+when "master"
+  gem "resque-lock-timeout", git: "https://github.com/Ibotta/resque-lock-timeout.git"
+when /^git:/, /^https:/
+  repo, ref = resque_lock_timeout_version.split("@", 2)
+  gem "resque-lock-timeout", git: repo, ref: ref
+when "latest"
+  gem "resque-lock-timeout"
+else
+  versions = resque_lock_timeout_version.split(",")
+  gem "resque-lock-timeout", *versions
+end
+
+gem "rake"
+gem "minitest"
+gem "simplecov"
+gem "debug"
+
+gem "standard", "~> 1.41"
+
+gem "logger", "~> 1.6"
