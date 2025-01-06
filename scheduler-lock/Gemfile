@@ -37,17 +37,28 @@ else
   gem "resque-scheduler", *versions
 end
 
-case resque_lock_timeout_version = ENV.fetch("RESQUE_LOCK_TIMEOUT_VERSION", "latest")
+resque_lock_timeout_version = ENV.fetch("RESQUE_LOCK_TIMEOUT_VERSION", "latest")
+capture_resque_lock_timeout = resque_lock_timeout_version.split(";", 2)
+resque_lock_timeout_gem = if capture_resque_lock_timeout[1]
+  resque_lock_timeout_version = capture_resque_lock_timeout[1]
+  capture_resque_lock_timeout[0]
+else
+  "resque-lock-timeout"
+end
+puts "resque_lock_timeout_gem: #{resque_lock_timeout_gem}"
+puts "resque_lock_timeout_version: #{resque_lock_timeout_version}"
+
+case resque_lock_timeout_version
 when "master"
-  gem "resque-lock-timeout", git: "https://github.com/Ibotta/resque-lock-timeout.git"
+  gem resque_lock_timeout_gem, git: "https://github.com/Ibotta/resque-lock-timeout.git"
 when /^git:/, /^https:/
   repo, ref = resque_lock_timeout_version.split("@", 2)
-  gem "resque-lock-timeout", git: repo, ref: ref
+  gem resque_lock_timeout_gem, git: repo, ref: ref
 when "latest"
-  gem "resque-lock-timeout"
+  gem resque_lock_timeout_gem
 else
   versions = resque_lock_timeout_version.split(",")
-  gem "resque-lock-timeout", *versions
+  gem resque_lock_timeout_gem, *versions
 end
 
 gem "rake"

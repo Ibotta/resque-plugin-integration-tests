@@ -30,8 +30,6 @@ class LockTest < Minitest::Test
     # assert that the active queue has the lonely job
     if scheduler_version_compare("< 4.9")
       assert_equal(1, Resque.size(Resque.queue_from_class(LonelyJob)))
-    elsif Resque::Scheduler::VERSION.end_with?("-ibotta")
-      assert_equal(1, Resque.size(Resque.queue_from_class(LonelyJob)))
     else
       # this is asserting that > 4.9 "fails" without the patch
       assert_equal(0, Resque.size(Resque.queue_from_class(LonelyJob)))
@@ -39,10 +37,10 @@ class LockTest < Minitest::Test
   end
 end
 
-if Resque::Scheduler::VERSION.end_with?("-ibotta")
+if scheduler_version_compare(">= 4.11")
   class LockBatchOffTest < Minitest::Test
     def setup
-      @batch_enabled = Resque::Scheduler.enable_delayed_requeue_batches
+      @batch_enabled = Resque::Scheduler.disable_delayed_requeue_batches
       @batch_size = Resque::Scheduler.delayed_requeue_batch_size
 
       $success = $lock_failed = $lock_expired = $enqueue_failed = 0
@@ -50,12 +48,12 @@ if Resque::Scheduler::VERSION.end_with?("-ibotta")
       Resque.redis.redis.flushall
       @worker = Resque::Worker.new(:test)
 
-      Resque::Scheduler.enable_delayed_requeue_batches = false
+      Resque::Scheduler.disable_delayed_requeue_batches = true
       Resque::Scheduler.delayed_requeue_batch_size = 1
     end
 
     def teardown
-      Resque::Scheduler.enable_delayed_requeue_batches = @batch_enabled
+      Resque::Scheduler.disable_delayed_requeue_batches = @batch_enabled
       Resque::Scheduler.delayed_requeue_batch_size = @batch_size
     end
 
@@ -72,21 +70,14 @@ if Resque::Scheduler::VERSION.end_with?("-ibotta")
       assert_equal(0, Resque.delayed_timestamp_size(t))
 
       # assert that the active queue has the lonely job
-      if scheduler_version_compare("< 4.9")
-        assert_equal(1, Resque.size(Resque.queue_from_class(LonelyJob)))
-      elsif Resque::Scheduler::VERSION.end_with?("-ibotta")
-        # should act like before
-        assert_equal(1, Resque.size(Resque.queue_from_class(LonelyJob)))
-      else
-        # this is asserting that > 4.9 "fails" without the patch
-        assert_equal(0, Resque.size(Resque.queue_from_class(LonelyJob)))
-      end
+      # should act like before, and have an item queued
+      assert_equal(1, Resque.size(Resque.queue_from_class(LonelyJob)))
     end
   end
 
   class LockBatchOnTest < Minitest::Test
     def setup
-      @batch_enabled = Resque::Scheduler.enable_delayed_requeue_batches
+      @batch_enabled = Resque::Scheduler.disable_delayed_requeue_batches
       @batch_size = Resque::Scheduler.delayed_requeue_batch_size
 
       $success = $lock_failed = $lock_expired = $enqueue_failed = 0
@@ -94,12 +85,12 @@ if Resque::Scheduler::VERSION.end_with?("-ibotta")
       Resque.redis.redis.flushall
       @worker = Resque::Worker.new(:test)
 
-      Resque::Scheduler.enable_delayed_requeue_batches = true
+      Resque::Scheduler.disable_delayed_requeue_batches = false
       Resque::Scheduler.delayed_requeue_batch_size = 100
     end
 
     def teardown
-      Resque::Scheduler.enable_delayed_requeue_batches = @batch_enabled
+      Resque::Scheduler.disable_delayed_requeue_batches = @batch_enabled
       Resque::Scheduler.delayed_requeue_batch_size = @batch_size
     end
 
@@ -115,15 +106,8 @@ if Resque::Scheduler::VERSION.end_with?("-ibotta")
       Resque::Scheduler.enqueue_delayed_items_for_timestamp(t)
       assert_equal(0, Resque.delayed_timestamp_size(t))
 
-      # assert that the active queue has the lonely job
-      if scheduler_version_compare("< 4.9")
-        assert_equal(1, Resque.size(Resque.queue_from_class(LonelyJob)))
-      elsif Resque::Scheduler::VERSION.end_with?("-ibotta")
-        assert_equal(0, Resque.size(Resque.queue_from_class(LonelyJob)))
-      else
-        # this is asserting that > 4.9 "fails" without the patch
-        assert_equal(0, Resque.size(Resque.queue_from_class(LonelyJob)))
-      end
+      # using batches, so the lonely job gets rejected "fail"
+      assert_equal(0, Resque.size(Resque.queue_from_class(LonelyJob)))
     end
   end
 
