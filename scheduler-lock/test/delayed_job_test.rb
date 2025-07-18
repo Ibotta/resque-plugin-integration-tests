@@ -37,7 +37,7 @@ class LockTest < Minitest::Test
   end
 end
 
-if scheduler_version_compare(">= 4.11")
+if scheduler_version_compare(">= 4.12")
   class LockBatchOffTest < Minitest::Test
     def setup
       @batch_enabled = Resque::Scheduler.disable_delayed_requeue_batches
